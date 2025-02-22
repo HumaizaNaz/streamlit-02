@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 import random
-import plotly.express as px
 
 # Enhanced challenges list
 challenges = [
@@ -147,15 +146,13 @@ st.subheader("📊 Progress Analysis")
 col3, col4 = st.columns(2)
 
 with col3:
-    # Progress over time
+    # Progress over time using Streamlit's native chart
     if not df.empty:
         df_plot = df.copy()
         df_plot["Date"] = pd.to_datetime(df_plot["Date"])
         df_plot["Completed"] = df_plot["Status"].map({"Completed": 1, "Pending": 0})
-        fig = px.line(df_plot, x="Date", y="Completed", 
-                     title="Challenge Completion Over Time",
-                     labels={"Completed": "Completed (1) / Pending (0)"})
-        st.plotly_chart(fig)
+        st.line_chart(df_plot.set_index("Date")["Completed"])
+        st.caption("Challenge Completion Over Time (1 = Completed, 0 = Pending)")
 
 with col4:
     # Achievement badges
@@ -166,6 +163,23 @@ with col4:
         if completed_count >= count:
             st.markdown(f"### {badge}")
             st.write(f"Unlocked at {count} completed challenges!")
+
+# Statistics
+st.markdown("---")
+st.subheader("📈 Statistics")
+col5, col6, col7 = st.columns(3)
+
+with col5:
+    total_challenges = len(df)
+    st.metric("Total Challenges", total_challenges)
+
+with col6:
+    completed_challenges = len(df[df["Status"] == "Completed"])
+    st.metric("Completed Challenges", completed_challenges)
+
+with col7:
+    completion_rate = (completed_challenges / total_challenges * 100) if total_challenges > 0 else 0
+    st.metric("Completion Rate", f"{completion_rate:.1f}%")
 
 # Recent History
 st.markdown("---")
